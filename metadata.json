@@ -1,0 +1,8 @@
+{
+  "name": "Lumina Research",
+  "description": "An AI-powered research assistant helping scientists find tools, models, and data with aesthetic precision and grounded references.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
