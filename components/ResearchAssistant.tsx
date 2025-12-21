@@ -8,11 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import { searchResearch, deepThinkResearch, fastCategorize, generateSpeech, transcribeAudio } from '../services/geminiService';
 import { ResearchResult, SearchOptions, ThemePreset, SavedSearch, CustomTheme, GroundingChunk } from '../types';
 
-interface ResearchAssistantProps {
-  onThemeChange: (color: string) => void;
-}
-
-const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) => {
+const ResearchAssistant: React.FC = () => {
   // Main State
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState<'standard' | 'maps' | 'deep'>('standard');
@@ -27,15 +23,6 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
   const [searchOptions, setSearchOptions] = useState<SearchOptions>({
     pubType: 'All',
     sortBy: 'relevance'
-  });
-  const [selectedTheme, setSelectedTheme] = useState<ThemePreset>('default');
-  const [customTheme, setCustomTheme] = useState<CustomTheme>({
-    primaryColor: '#e2e8f0',
-    backgroundColor: '#0f172a',
-    fontFamily: 'Inter',
-    accentColor: '#60a5fa',
-    linkColor: '#3b82f6',
-    borderRadius: '1.5rem'
   });
   const [refSort, setRefSort] = useState<'default' | 'title'>('default');
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
@@ -83,9 +70,6 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
         const useMaps = mode === 'maps';
         const res = await searchResearch(query, useMaps, searchOptions);
         setResult(res);
-        if (res.themeColor) {
-          onThemeChange(res.themeColor);
-        }
       }
     } catch (e) {
       console.error(e);
@@ -292,71 +276,40 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
     });
   }, [result]);
 
-  // Theme Classes & Styles
-  const getThemeClasses = () => {
-    switch (selectedTheme) {
-      case 'minimalist':
-        return "bg-white text-gray-900 border border-gray-200 shadow-sm font-sans";
-      case 'futuristic':
-        return "bg-black/90 text-cyan-50 border border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.15)] font-['Orbitron'] tracking-wide";
-      case 'classic':
-        return "bg-[#fdfbf7] text-[#4a4a4a] border border-[#e8e4dc] shadow-md font-['Lora']";
-      case 'custom':
-        return ""; // applied via style prop
-      default:
-        return "bg-white/5 backdrop-blur-md border border-white/10 text-white font-sans";
-    }
-  };
-
-  const customStyle = selectedTheme === 'custom' ? {
-    backgroundColor: customTheme.backgroundColor,
-    color: customTheme.primaryColor,
-    fontFamily: customTheme.fontFamily,
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: customTheme.borderRadius
-  } : {};
-
-  // CSS variables for custom theme dynamic styling (links, buttons)
-  const customCssVars = selectedTheme === 'custom' ? {
-    '--theme-accent': customTheme.accentColor,
-    '--theme-link': customTheme.linkColor,
-    '--theme-radius': customTheme.borderRadius,
-  } as React.CSSProperties : {};
-
   return (
-    <div className="flex flex-col h-full max-w-5xl mx-auto p-6 space-y-8 pb-32" style={customCssVars}>
+    <div className="flex flex-col h-full max-w-5xl mx-auto p-6 space-y-8 pb-32">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="text-center w-full space-y-2">
-          <h2 className="text-4xl font-serif italic text-white/90">What will you discover today?</h2>
-          <p className="text-white/50 text-sm">Powered by Gemini 2.5 & 3 Pro</p>
+          <h2 className="text-4xl font-serif italic text-text-primary opacity-90">What will you discover today?</h2>
+          <p className="text-text-secondary text-sm">Powered by Gemini 1.5 Pro</p>
         </div>
         
         {/* Saved Searches Toggle */}
         <div className="relative">
           <button 
              onClick={() => setShowSavedList(!showSavedList)}
-             className="p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/70 transition-colors"
+             className="p-3 bg-bg-secondary hover:bg-bg-tertiary rounded-full text-text-secondary transition-colors"
              title="Saved Searches"
           >
              <Bookmark size={20} />
           </button>
           
           {showSavedList && (
-             <div className="absolute right-0 top-12 w-80 bg-[#1e293b] border border-white/10 rounded-xl shadow-2xl z-50 p-2 max-h-96 overflow-y-auto">
-               <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2 px-2">Saved Queries</h4>
+             <div className="absolute right-0 top-12 w-80 bg-bg-secondary border border-border-primary rounded-xl shadow-high z-50 p-2 max-h-96 overflow-y-auto">
+               <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 px-2">Saved Queries</h4>
                {savedSearches.length === 0 ? (
-                 <p className="text-white/30 text-sm px-2">No saved searches yet.</p>
+                 <p className="text-text-muted text-sm px-2">No saved searches yet.</p>
                ) : (
                  savedSearches.map(s => (
-                   <div key={s.id} className="group flex items-center justify-between p-2 hover:bg-white/5 rounded-lg cursor-pointer" onClick={() => loadSearch(s)}>
+                   <div key={s.id} className="group flex items-center justify-between p-2 hover:bg-bg-tertiary rounded-lg cursor-pointer" onClick={() => loadSearch(s)}>
                       <div className="overflow-hidden">
-                        <p className="text-white text-sm truncate">{s.query}</p>
-                        <p className="text-white/30 text-xs">{new Date(s.timestamp).toLocaleDateString()}</p>
+                        <p className="text-text-primary text-sm truncate">{s.query}</p>
+                        <p className="text-text-muted text-xs">{new Date(s.timestamp).toLocaleDateString()}</p>
                       </div>
                       <button 
                         onClick={(e) => deleteSearch(s.id, e)}
-                        className="p-1 text-white/20 group-hover:text-red-400 hover:bg-white/10 rounded"
+                        className="p-1 text-text-muted group-hover:text-red-400 hover:bg-bg-tertiary rounded"
                       >
                          <Trash2 size={14} />
                       </button>
@@ -369,18 +322,18 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
       </div>
 
       {/* Input Area */}
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-2xl">
+      <div className="bg-bg-secondary backdrop-blur-xl border border-border-primary p-6 rounded-large shadow-high">
         <div className="flex flex-col space-y-4">
           <div className="relative">
              <textarea
                value={query}
                onChange={(e) => setQuery(e.target.value)}
                placeholder="Describe your research needs (e.g., 'I need a model for protein folding', 'Impact of Jazz on 1920s culture', 'Sustainable concrete materials'...)"
-               className="w-full bg-transparent text-lg text-white placeholder-white/30 outline-none resize-none h-24 pr-12"
+               className="w-full bg-transparent text-lg text-text-primary placeholder-text-muted outline-none resize-none h-24 pr-12"
              />
              <button
                onClick={toggleQueryDictation}
-               className={`absolute right-0 top-0 p-2 rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
+               className={`absolute right-0 top-0 p-2 rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'text-text-muted hover:text-text-primary hover:bg-bg-tertiary'}`}
                title="Dictate Query"
              >
                 {isListening ? <Mic size={20} /> : <MicOff size={20} />}
@@ -389,29 +342,29 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
           
           {/* Advanced Search Panel */}
           {showAdvanced && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-white/5 animate-in slide-in-from-top-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-border-primary animate-in slide-in-from-top-2">
                <div>
-                  <label className="text-xs text-white/40 block mb-1">Start Year</label>
+                  <label className="text-xs text-text-muted block mb-1">Start Year</label>
                   <input 
                     type="number" 
                     placeholder="2020" 
-                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                    className="w-full bg-bg-tertiary border-border-secondary rounded-lg px-3 py-2 text-sm"
                     onChange={(e) => setSearchOptions({...searchOptions, dateRange: {...searchOptions.dateRange, start: e.target.value}})}
                   />
                </div>
                <div>
-                  <label className="text-xs text-white/40 block mb-1">End Year</label>
+                  <label className="text-xs text-text-muted block mb-1">End Year</label>
                   <input 
                     type="number" 
                     placeholder="2024" 
-                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                    className="w-full bg-bg-tertiary border-border-secondary rounded-lg px-3 py-2 text-sm"
                     onChange={(e) => setSearchOptions({...searchOptions, dateRange: {...searchOptions.dateRange, end: e.target.value}})}
                   />
                </div>
                <div>
-                  <label className="text-xs text-white/40 block mb-1">Type</label>
+                  <label className="text-xs text-text-muted block mb-1">Type</label>
                   <select 
-                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                    className="w-full bg-bg-tertiary border-border-secondary rounded-lg px-3 py-2 text-sm"
                     value={searchOptions.pubType}
                     onChange={(e) => setSearchOptions({...searchOptions, pubType: e.target.value})}
                   >
@@ -424,9 +377,9 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
                   </select>
                </div>
                <div>
-                  <label className="text-xs text-white/40 block mb-1">Sort Preference</label>
+                  <label className="text-xs text-text-muted block mb-1">Sort Preference</label>
                   <select 
-                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                    className="w-full bg-bg-tertiary border-border-secondary rounded-lg px-3 py-2 text-sm"
                     value={searchOptions.sortBy}
                     onChange={(e) => setSearchOptions({...searchOptions, sortBy: e.target.value as 'relevance' | 'date'})}
                   >
@@ -435,40 +388,40 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
                   </select>
                </div>
                <div className="md:col-span-2 lg:col-span-4">
-                  <label className="text-xs text-white/40 block mb-1">Exclude Keywords</label>
+                  <label className="text-xs text-text-muted block mb-1">Exclude Keywords</label>
                   <input 
                     type="text" 
                     placeholder="e.g. deprecated, paid, commercial" 
-                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                    className="w-full bg-bg-tertiary border-border-secondary rounded-lg px-3 py-2 text-sm"
                     onChange={(e) => setSearchOptions({...searchOptions, excludeKeywords: e.target.value})}
                   />
                </div>
             </div>
           )}
 
-          <div className="flex items-center justify-between border-t border-white/10 pt-4 flex-wrap gap-4">
+          <div className="flex items-center justify-between border-t border-border-primary pt-4 flex-wrap gap-4">
             <div className="flex gap-2">
               <button 
                 onClick={() => setMode('standard')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${mode === 'standard' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${mode === 'standard' ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30' : 'text-text-muted hover:text-text-primary hover:bg-bg-tertiary'}`}
               >
                 <Search size={16} /> Standard
               </button>
               <button 
                 onClick={() => setMode('maps')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${mode === 'maps' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${mode === 'maps' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'text-text-muted hover:text-text-primary hover:bg-bg-tertiary'}`}
               >
                 <MapPin size={16} /> Locate
               </button>
               <button 
                 onClick={() => setMode('deep')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${mode === 'deep' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${mode === 'deep' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-text-muted hover:text-text-primary hover:bg-bg-tertiary'}`}
               >
                 <Brain size={16} /> Deep Think
               </button>
               <button 
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all ${showAdvanced ? 'text-white bg-white/10' : 'text-white/40 hover:text-white'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all ${showAdvanced ? 'text-text-primary bg-bg-tertiary' : 'text-text-muted hover:text-text-primary'}`}
               >
                 <SlidersHorizontal size={16} />
               </button>
@@ -478,7 +431,7 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
                 <button 
                    onClick={saveSearch}
                    disabled={!query}
-                   className="p-2 rounded-full text-white/40 hover:text-yellow-400 hover:bg-white/5 disabled:opacity-30"
+                   className="p-2 rounded-full text-text-muted hover:text-yellow-400 hover:bg-bg-tertiary disabled:opacity-30"
                    title="Save this search"
                 >
                    <BookmarkPlus size={20} />
@@ -486,7 +439,7 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
                 <button 
                   onClick={handleSearch}
                   disabled={loading || !query}
-                  className="bg-white text-black px-6 py-2 rounded-full font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-accent-primary text-white px-6 py-2 rounded-full font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {loading ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} />}
                   <span>Research</span>
@@ -500,7 +453,7 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
       {tags && (
         <div className="flex gap-2 justify-center fade-in">
           {tags.split(',').map((tag, i) => (
-            <span key={i} className="px-3 py-1 bg-white/5 rounded-full text-xs text-white/60 flex items-center gap-1 border border-white/5">
+            <span key={i} className="px-3 py-1 bg-bg-secondary rounded-full text-xs text-text-secondary flex items-center gap-1 border border-border-primary">
               <Tag size={12} /> {tag.trim()}
             </span>
           ))}
@@ -511,97 +464,32 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
       {(result || deepResult) && (
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
             {/* Result Toolbar */}
-           <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-4 px-2">
-              <div className="flex flex-col gap-2 w-full md:w-auto">
-                 <div className="flex items-center gap-3">
-                   <span className="text-sm text-white/40">Theme:</span>
-                   <select 
-                     value={selectedTheme} 
-                     onChange={(e) => setSelectedTheme(e.target.value as ThemePreset)}
-                     className="bg-black/20 text-white text-sm border border-white/10 rounded-lg px-2 py-1 outline-none focus:border-white/30"
-                   >
-                      <option value="default">Default</option>
-                      <option value="minimalist">Minimalist</option>
-                      <option value="futuristic">Futuristic</option>
-                      <option value="classic">Classic</option>
-                      <option value="custom">Custom</option>
-                   </select>
-                 </div>
-                 
-                 {selectedTheme === 'custom' && (
-                   <div className="flex flex-wrap gap-2 items-center bg-black/20 p-2 rounded-lg border border-white/5">
-                     <div className="flex flex-col">
-                        <label className="text-[10px] text-white/40">Text</label>
-                        <input type="color" value={customTheme.primaryColor} onChange={(e) => setCustomTheme({...customTheme, primaryColor: e.target.value})} className="w-6 h-6 rounded cursor-pointer bg-transparent"/>
-                     </div>
-                     <div className="flex flex-col">
-                        <label className="text-[10px] text-white/40">Bg</label>
-                        <input type="color" value={customTheme.backgroundColor} onChange={(e) => setCustomTheme({...customTheme, backgroundColor: e.target.value})} className="w-6 h-6 rounded cursor-pointer bg-transparent"/>
-                     </div>
-                     <div className="flex flex-col">
-                        <label className="text-[10px] text-white/40">Accent</label>
-                        <input type="color" value={customTheme.accentColor} onChange={(e) => setCustomTheme({...customTheme, accentColor: e.target.value})} className="w-6 h-6 rounded cursor-pointer bg-transparent"/>
-                     </div>
-                     <div className="flex flex-col">
-                        <label className="text-[10px] text-white/40">Link</label>
-                        <input type="color" value={customTheme.linkColor} onChange={(e) => setCustomTheme({...customTheme, linkColor: e.target.value})} className="w-6 h-6 rounded cursor-pointer bg-transparent"/>
-                     </div>
-                     <div className="flex flex-col">
-                        <label className="text-[10px] text-white/40">Font</label>
-                        <select value={customTheme.fontFamily} onChange={(e) => setCustomTheme({...customTheme, fontFamily: e.target.value})} className="bg-white/10 text-white text-xs rounded px-1 py-1 w-20">
-                            <option value="Inter">Inter</option>
-                            <option value="Roboto">Roboto</option>
-                            <option value="Lato">Lato</option>
-                            <option value="Montserrat">Montserrat</option>
-                            <option value="Open Sans">Open Sans</option>
-                            <option value="Playfair Display">Playfair</option>
-                            <option value="Orbitron">Orbitron</option>
-                            <option value="Lora">Lora</option>
-                        </select>
-                     </div>
-                     <div className="flex flex-col">
-                        <label className="text-[10px] text-white/40">Radius</label>
-                         <select value={customTheme.borderRadius} onChange={(e) => setCustomTheme({...customTheme, borderRadius: e.target.value})} className="bg-white/10 text-white text-xs rounded px-1 py-1">
-                            <option value="0px">Sharp</option>
-                            <option value="8px">Soft</option>
-                            <option value="24px">Round</option>
-                        </select>
-                     </div>
-                   </div>
-                 )}
-              </div>
-              
+           <div className="flex flex-col md:flex-row gap-4 justify-end items-start md:items-center mb-4 px-2">
               <div className="flex gap-2 self-end md:self-auto">
-                 <div className="flex items-center gap-1 bg-white/5 rounded-lg px-2">
-                     <span className="text-xs text-white/40 hidden sm:inline">Citations:</span>
-                     <button onClick={() => generateCitations('bibtex')} className="text-xs text-blue-300 hover:text-white px-2 py-1">BibTeX</button>
-                     <span className="text-white/20">|</span>
-                     <button onClick={() => generateCitations('ris')} className="text-xs text-blue-300 hover:text-white px-2 py-1">RIS</button>
+                 <div className="flex items-center gap-1 bg-bg-secondary rounded-lg px-2">
+                     <span className="text-xs text-text-muted hidden sm:inline">Citations:</span>
+                     <button onClick={() => generateCitations('bibtex')} className="text-xs text-text-accent hover:text-text-primary px-2 py-1">BibTeX</button>
+                     <span className="text-border-secondary">|</span>
+                     <button onClick={() => generateCitations('ris')} className="text-xs text-text-accent hover:text-text-primary px-2 py-1">RIS</button>
                  </div>
-                 <button onClick={handleCopy} className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" title="Copy to Clipboard">
+                 <button onClick={handleCopy} className="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors" title="Copy to Clipboard">
                     {copied ? <Check size={18} className="text-green-400"/> : <Copy size={18} />}
                  </button>
-                 <button onClick={handleDownload} className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" title="Download Markdown">
+                 <button onClick={handleDownload} className="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors" title="Download Markdown">
                     <Download size={18} />
                  </button>
               </div>
            </div>
 
           <div 
-            className={`rounded-3xl p-8 shadow-2xl relative overflow-hidden transition-all duration-500 ${getThemeClasses()}`}
-            style={customStyle}
+            className="card p-8 relative overflow-hidden transition-all duration-500"
           >
-             {/* Decorative background element for default theme */}
-             {selectedTheme === 'default' && (
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl -z-10" />
-             )}
-
-             <div className="flex justify-between items-start mb-6 border-b border-current border-opacity-10 pb-4">
+             <div className="flex justify-between items-start mb-6 border-b border-border-primary pb-4">
                <h3 className="text-2xl font-serif opacity-90">Research Findings</h3>
                <button 
                  onClick={() => handleTTS(displayResult)}
                  disabled={isPlaying}
-                 className={`p-2 rounded-full transition-all ${isPlaying ? 'bg-blue-500 text-white animate-pulse' : 'bg-current bg-opacity-10 opacity-70 hover:opacity-100'}`}
+                 className={`p-2 rounded-full transition-all ${isPlaying ? 'bg-accent-primary text-white animate-pulse' : 'bg-bg-tertiary opacity-70 hover:opacity-100'}`}
                >
                  <Volume2 size={20} />
                </button>
@@ -609,7 +497,7 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
 
              {/* Found Images Gallery */}
              {imageChunks.length > 0 && (
-                 <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-current bg-opacity-5 rounded-xl">
+                 <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-bg-tertiary rounded-xl">
                     {imageChunks.map((chunk, idx) => (
                         <a key={idx} href={chunk.web?.uri} target="_blank" rel="noreferrer" className="block group relative overflow-hidden rounded-lg aspect-square">
                             <img 
@@ -628,31 +516,16 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
                  </div>
              )}
 
-             <div className="prose prose-lg max-w-none prose-headings:font-serif prose-p:opacity-80 prose-li:opacity-80 prose-strong:opacity-100 prose-img:rounded-xl prose-img:shadow-lg" style={{
-                 '--tw-prose-body': 'currentColor',
-                 '--tw-prose-headings': 'currentColor',
-                 '--tw-prose-links': selectedTheme === 'custom' ? 'var(--theme-link)' : 'currentColor',
-                 '--tw-prose-bold': 'currentColor',
-                 '--tw-prose-counters': 'currentColor',
-                 '--tw-prose-bullets': 'currentColor',
-                 '--tw-prose-hr': 'currentColor',
-                 '--tw-prose-quotes': 'currentColor',
-                 '--tw-prose-quote-borders': 'currentColor',
-                 '--tw-prose-captions': 'currentColor',
-                 '--tw-prose-code': 'currentColor',
-                 '--tw-prose-pre-code': 'currentColor',
-                 '--tw-prose-pre-bg': 'rgba(0,0,0,0.2)',
-                 '--tw-prose-th-borders': 'currentColor',
-                 '--tw-prose-td-borders': 'currentColor',
-             } as React.CSSProperties}>
+             <div className="prose prose-lg max-w-none prose-p:text-text-secondary prose-li:text-text-secondary">
                <ReactMarkdown
                  components={{
                    img: ({node, ...props}) => (
                      <div className="my-6">
-                        <img {...props} className="rounded-xl shadow-lg border border-white/10 max-h-[400px] object-cover mx-auto" alt={props.alt || 'Research Visual'} />
-                        {props.alt && <p className="text-center text-sm opacity-60 mt-2 italic">{props.alt}</p>}
+                        <img {...props} className="rounded-xl shadow-lg border border-border-primary max-h-[400px] object-cover mx-auto" alt={props.alt || 'Research Visual'} />
+                        {props.alt && <p className="text-center text-sm text-text-muted mt-2 italic">{props.alt}</p>}
                      </div>
-                   )
+                   ),
+                   a: ({node, ...props}) => <a {...props} className="text-text-accent hover:underline" />,
                  }}
                >
                  {displayResult}
@@ -660,18 +533,14 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
              </div>
 
              {/* Feedback Section */}
-             <div className="flex justify-between items-center mt-8 pt-4 border-t border-current border-opacity-10">
-                <div className="flex gap-2">
-                   {selectedTheme === 'custom' && <span className="text-xs opacity-50">Custom Theme Active</span>}
-                </div>
-                
+             <div className="flex justify-end items-center mt-8 pt-4 border-t border-border-primary">
                 <div className="flex items-center gap-2">
-                    <span className="text-xs opacity-50 mr-2">Was this helpful?</span>
+                    <span className="text-xs text-text-muted mr-2">Was this helpful?</span>
                     
                     {/* Voice Feedback Button */}
                     <button 
                         onClick={toggleFeedbackDictation}
-                        className={`p-2 rounded-full transition-all relative ${isFeedbackListening ? 'bg-red-500 text-white animate-pulse' : 'bg-current bg-opacity-5 hover:bg-opacity-10'}`}
+                        className={`p-2 rounded-full transition-all relative ${isFeedbackListening ? 'bg-red-500 text-white animate-pulse' : 'bg-bg-tertiary hover:bg-opacity-80'}`}
                         title="Say 'Good' or 'Bad' to rate"
                     >
                         {isFeedbackListening ? <Mic size={16} /> : <MicOff size={16} />}
@@ -680,13 +549,13 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
 
                     <button 
                     onClick={() => setFeedback('up')}
-                    className={`p-2 rounded-full transition-colors ${feedback === 'up' ? 'bg-green-500 text-white' : 'bg-current bg-opacity-5 hover:bg-opacity-10'}`}
+                    className={`p-2 rounded-full transition-colors ${feedback === 'up' ? 'bg-green-500 text-white' : 'bg-bg-tertiary hover:bg-opacity-80'}`}
                     >
                     <ThumbsUp size={16} />
                     </button>
                     <button 
                     onClick={() => setFeedback('down')}
-                    className={`p-2 rounded-full transition-colors ${feedback === 'down' ? 'bg-red-500 text-white' : 'bg-current bg-opacity-5 hover:bg-opacity-10'}`}
+                    className={`p-2 rounded-full transition-colors ${feedback === 'down' ? 'bg-red-500 text-white' : 'bg-bg-tertiary hover:bg-opacity-80'}`}
                     >
                     <ThumbsDown size={16} />
                     </button>
@@ -695,13 +564,13 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
 
              {/* Grounding Sources */}
              {sortedChunks.length > 0 && (
-               <div className="mt-8 pt-6 border-t border-current border-opacity-10">
+               <div className="mt-8 pt-6 border-t border-border-primary">
                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-sm font-semibold opacity-50 uppercase tracking-wider">References & Sources</h4>
+                    <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wider">References & Sources</h4>
                     <select 
                       value={refSort}
                       onChange={(e) => setRefSort(e.target.value as 'default' | 'title')}
-                      className="bg-transparent text-xs opacity-50 border border-current border-opacity-20 rounded px-2 py-1"
+                      className="bg-transparent text-xs text-text-muted border border-border-secondary rounded px-2 py-1"
                     >
                        <option value="default">Sort by Relevance</option>
                        <option value="title">Sort by Title</option>
@@ -718,14 +587,14 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
                          href={item.uri} 
                          target="_blank" 
                          rel="noreferrer"
-                         className="flex items-center gap-3 p-3 rounded-lg bg-current bg-opacity-5 hover:bg-opacity-10 transition-colors border border-current border-opacity-5 group"
+                         className="flex items-center gap-3 p-3 rounded-lg bg-bg-tertiary hover:bg-opacity-80 transition-colors border border-border-secondary group"
                        >
-                         <div className="p-2 rounded-md bg-current bg-opacity-5 opacity-70">
+                         <div className="p-2 rounded-md bg-bg-primary opacity-70">
                            {chunk.maps ? <MapPin size={16} /> : <LinkIcon size={16} />}
                          </div>
                          <div className="overflow-hidden">
-                           <p className="text-sm font-medium opacity-90 truncate">{item.title}</p>
-                           <p className="text-xs opacity-40 truncate">{item.uri}</p>
+                           <p className="text-sm font-medium text-text-primary truncate">{item.title}</p>
+                           <p className="text-xs text-text-muted truncate">{item.uri}</p>
                          </div>
                        </a>
                      );

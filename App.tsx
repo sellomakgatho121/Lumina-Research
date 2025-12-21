@@ -6,25 +6,39 @@ import LuminaLive from './components/LuminaLive';
 import ChatAssistant from './components/ChatAssistant';
 import { AppMode } from './types';
 
+import { useEffect } from 'react';
+import ThemeSwitcher from './components/ThemeSwitcher';
+
+type Theme = 'digital' | 'scholar' | 'creative';
+
 const App: React.FC = () => {
   const [mode, setMode] = useState<AppMode>(AppMode.RESEARCH);
-  const [accentColor, setAccentColor] = useState<string>('');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = localStorage.getItem('lumina-theme') as Theme;
+    return savedTheme || 'digital';
+  });
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('lumina-theme', theme);
+  }, [theme]);
 
   const renderContent = () => {
     switch (mode) {
       case AppMode.RESEARCH:
-        return <ResearchAssistant onThemeChange={setAccentColor} />;
+        return <ResearchAssistant />;
       case AppMode.MEDIA:
         return <MediaAnalyzer />;
       case AppMode.LIVE:
         return <LuminaLive />;
       default:
-        return <ResearchAssistant onThemeChange={setAccentColor} />;
+        return <ResearchAssistant />;
     }
   };
 
   return (
-    <Layout currentMode={mode} setMode={setMode} accentColor={accentColor}>
+    <Layout currentMode={mode} setMode={setMode}>
+      <ThemeSwitcher setTheme={setTheme} />
       <div className="relative z-10 pt-10">
         {renderContent()}
       </div>
