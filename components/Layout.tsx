@@ -1,6 +1,9 @@
 import React, { ReactNode } from 'react';
-import { Microscope, Layers, MessageCircle, Radio } from 'lucide-react';
+import { Microscope, Layers, Radio, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AppMode } from '../types';
+import clsx from 'clsx';
+import AnimatedBackground from './ui/AnimatedBackground';
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,55 +12,105 @@ interface LayoutProps {
   accentColor: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode, accentColor }) => {
+const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode }) => {
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 flex flex-col md:flex-row transition-colors duration-1000" style={{ backgroundColor: accentColor ? `color-mix(in srgb, ${accentColor} 10%, #0f172a)` : '#0f172a' }}>
-      {/* Sidebar */}
-      <nav className="w-full md:w-20 lg:w-64 flex-shrink-0 bg-black/20 backdrop-blur-xl border-r border-white/5 flex flex-col">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <span className="font-serif font-bold text-white text-lg">L</span>
-          </div>
-          <span className="font-serif font-semibold text-xl tracking-tight hidden lg:block text-white">Lumina</span>
-        </div>
+    <div className="min-h-screen relative overflow-x-hidden bg-[var(--lumina-bg)] text-slate-200 font-sans selection:bg-blue-500/30">
+      {/* Animated Particle Background */}
+      <AnimatedBackground />
 
-        <div className="flex-1 px-4 space-y-2 py-4">
-          <button 
-            onClick={() => setMode(AppMode.RESEARCH)}
-            className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${currentMode === AppMode.RESEARCH ? 'bg-white/10 text-white shadow-inner' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-          >
-            <Microscope size={20} />
-            <span className="hidden lg:block">Research</span>
-          </button>
-          
-          <button 
-            onClick={() => setMode(AppMode.MEDIA)}
-            className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${currentMode === AppMode.MEDIA ? 'bg-white/10 text-white shadow-inner' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-          >
-            <Layers size={20} />
-            <span className="hidden lg:block">Media Lab</span>
-          </button>
-          
-          <button 
-            onClick={() => setMode(AppMode.LIVE)}
-            className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${currentMode === AppMode.LIVE ? 'bg-indigo-500/20 text-indigo-300 shadow-inner border border-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-          >
-            <Radio size={20} />
-            <span className="hidden lg:block">Lumina Live</span>
-          </button>
-        </div>
-        
-        <div className="p-6 border-t border-white/5 text-xs text-white/20 hidden lg:block">
-          v1.0.0 • Gemini Powered
-        </div>
-      </nav>
+      {/* Global Noise Texture */}
+      <div className="noise-bg" />
 
-      {/* Main Content */}
-      <main className="flex-1 relative overflow-y-auto h-screen">
-        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+      {/* Ambient Background Gradient */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-600/10 blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/10 blur-[120px]" />
+      </div>
+
+      {/* Main Content - Properly Centered */}
+      <main className="relative z-10 w-full min-h-screen flex items-center justify-center p-6 md:p-12">
         {children}
       </main>
+
+      {/* Floating Dock Navigation - Simplified for Mobile */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="flex items-center gap-1 md:gap-2 p-2 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50"
+        >
+          <NavButton
+            active={currentMode === AppMode.RESEARCH}
+            onClick={() => setMode(AppMode.RESEARCH)}
+            icon={<Microscope size={20} />}
+            label="Research"
+          />
+          <NavButton
+            active={currentMode === AppMode.MEDIA}
+            onClick={() => setMode(AppMode.MEDIA)}
+            icon={<Layers size={20} />}
+            label="Media"
+          />
+          <NavButton
+            active={currentMode === AppMode.LIVE}
+            onClick={() => setMode(AppMode.LIVE)}
+            icon={<Radio size={20} />}
+            label="Live"
+          />
+
+          <div className="w-px h-6 bg-white/10 mx-1 hidden md:block" />
+
+          <div className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
+            <Sparkles size={16} className="text-white" />
+          </div>
+        </motion.div>
+      </nav>
     </div>
+  );
+};
+
+interface NavButtonProps {
+  active: boolean;
+  onClick: () => void;
+  icon: ReactNode;
+  label: string;
+}
+
+const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={clsx(
+        "relative flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all duration-300 group min-w-[48px] min-h-[48px] justify-center",
+        active ? "text-white" : "text-slate-400 hover:text-white"
+      )}
+      aria-label={label}
+    >
+      <div className="relative z-10 flex items-center gap-2">
+        {icon}
+        <AnimatePresence>
+          {active && (
+            <motion.span
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "auto", opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              className="overflow-hidden whitespace-nowrap text-sm font-medium hidden md:block"
+            >
+              {label}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {active && (
+        <motion.div
+          layoutId="nav-pill"
+          className="absolute inset-0 bg-white/10 rounded-xl border border-white/5"
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        />
+      )}
+    </button>
   );
 };
 
