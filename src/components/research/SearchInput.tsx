@@ -15,12 +15,14 @@ interface SearchInputProps {
     setOptions: (o: SearchOptions) => void;
     mode: 'standard' | 'maps' | 'deep';
     setMode: (m: 'standard' | 'maps' | 'deep') => void;
+    selectedProvider: import('../../types').LLMProvider;
+    setSelectedProvider: (p: import('../../types').LLMProvider) => void;
     onSave: () => void;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
     query, setQuery, onSearch, loading, isListening, toggleDictation,
-    options, setOptions, mode, setMode, onSave
+    options, setOptions, mode, setMode, selectedProvider, setSelectedProvider, onSave
 }) => {
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
@@ -84,6 +86,19 @@ const SearchInput: React.FC<SearchInputProps> = ({
                                     <span className="capitalize">{m === 'deep' ? 'Deep Think' : m}</span>
                                 </button>
                             ))}
+
+                            <div className="w-px bg-white/10 mx-1" />
+
+                            <select
+                                value={selectedProvider}
+                                onChange={(e) => setSelectedProvider(e.target.value as any)}
+                                className="bg-transparent text-white/60 hover:text-white text-xs font-semibold outline-none px-2 cursor-pointer transition-colors"
+                            >
+                                <option value="gemini" className="bg-slate-900">Gemini</option>
+                                <option value="groq" className="bg-slate-900">Groq</option>
+                                <option value="deepseek" className="bg-slate-900">DeepSeek</option>
+                                <option value="openrouter" className="bg-slate-900">OpenRouter</option>
+                            </select>
                         </div>
 
                         <div className="flex gap-3 w-full md:w-auto">

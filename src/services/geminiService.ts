@@ -1,21 +1,34 @@
-import { GoogleGenAI, Modality, Type, HarmCategory, HarmBlockThreshold } from "@google/genai";
+import { GoogleGenAI, Modality, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { ResearchResult, SearchOptions } from "../types";
+import { ILLMProvider } from "./llmProvider";
 
-// Note: In a production environment, this should be handled securely.
-// The prompt instructions specify using process.env.API_KEY directly.
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
+
+export class GeminiService implements ILLMProvider {
+  async research(query: string, useMaps: boolean = false, options?: SearchOptions): Promise<ResearchResult> {
+    return searchResearch(query, useMaps, options);
+  }
+
+  async deepThink(query: string): Promise<string> {
+    return deepThinkResearch(query);
+  }
+
+  async chat(history: { role: string; parts: { text: string }[] }[], newMessage: string): Promise<string> {
+    return sendChatMessage(history, newMessage);
+  }
+}
 
 // -- 1. Research with Grounding (Search or Maps) --
 export const searchResearch = async (
-  query: string, 
+  query: string,
   useMaps: boolean = false,
   options?: SearchOptions
 ): Promise<ResearchResult> => {
   const ai = getAI();
   const modelId = 'gemini-2.5-flash';
-  
+
   const tools = useMaps ? [{ googleMaps: {} }] : [{ googleSearch: {} }];
-  
+
   // Construct augmented query based on advanced options
   let augmentedQuery = query;
   if (options) {
@@ -74,7 +87,7 @@ export const searchResearch = async (
 
     const text = response.text || "No results found.";
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    
+
     // Extract theme color if present
     const colorMatch = text.match(/THEME_COLOR:\s*(#[0-9A-Fa-f]{6})/);
     const themeColor = colorMatch ? colorMatch[1] : undefined;
@@ -127,7 +140,7 @@ export const deepThinkResearch = async (query: string): Promise<string> => {
 export const fastCategorize = async (text: string): Promise<string> => {
   const ai = getAI();
   const modelId = 'gemini-2.5-flash-lite-latest'; // Mapping for flash-lite
-  
+
   try {
     const response = await ai.models.generateContent({
       model: modelId,
@@ -146,7 +159,7 @@ export const sendChatMessage = async (
 ) => {
   const ai = getAI();
   const modelId = 'gemini-3-pro-preview';
-  
+
   try {
     const chat = ai.chats.create({
       model: modelId,
@@ -155,7 +168,7 @@ export const sendChatMessage = async (
         systemInstruction: "You are a helpful, intelligent research assistant.",
       }
     });
-    
+
     const result = await chat.sendMessage({ message: newMessage });
     return result.text;
   } catch (error) {

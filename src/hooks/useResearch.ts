@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { ResearchResult, SearchOptions, SavedSearch } from '../types';
-import { searchResearch, deepThinkResearch, generateSpeech, transcribeAudio } from '../services/geminiService';
+import { ResearchResult, SearchOptions, SavedSearch, LLMProvider } from '../types';
+import { generateSpeech, transcribeAudio } from '../services/geminiService';
+import { getProvider } from '../services/providerFactory';
 
 export const useResearch = (onThemeChange?: (color: string) => void) => {
     const [query, setQuery] = useState('');
     const [mode, setMode] = useState<'standard' | 'maps' | 'deep'>('standard');
+    const [selectedProvider, setSelectedProvider] = useState<LLMProvider>(LLMProvider.GEMINI);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<ResearchResult | null>(null);
     const [deepResult, setDeepResult] = useState<string | null>(null);
@@ -62,12 +64,13 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
         setDeepResult(null);
 
         try {
+            const provider = getProvider(selectedProvider);
             if (mode === 'deep') {
-                const text = await deepThinkResearch(query);
+                const text = await provider.deepThink(query);
                 setDeepResult(text);
             } else {
                 const useMaps = mode === 'maps';
-                const res = await searchResearch(query, useMaps, searchOptions);
+                const res = await provider.research(query, useMaps, searchOptions);
                 setResult(res);
                 if (res.themeColor && onThemeChange) onThemeChange(res.themeColor);
             }
@@ -183,6 +186,7 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
     return {
         query, setQuery,
         mode, setMode,
+        selectedProvider, setSelectedProvider,
         loading,
         result,
         deepResult,

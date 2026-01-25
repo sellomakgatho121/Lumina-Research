@@ -5,6 +5,21 @@ export enum ModelTier {
   CREATIVE = 'creative'
 }
 
+export enum LLMProvider {
+  GEMINI = 'gemini',
+  GROQ = 'groq',
+  DEEPSEEK = 'deepseek',
+  OPENROUTER = 'openrouter'
+}
+
+export interface ProviderConfig {
+  id: LLMProvider;
+  name: string;
+  models: string[];
+  defaultModel: string;
+  isHighReasoning: boolean;
+}
+
 export enum AppMode {
   RESEARCH = 'research',
   MEDIA = 'media',

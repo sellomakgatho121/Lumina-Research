@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: lumina-research
+    runtime: static
+    buildCommand: npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_GEMINI_API_KEY
+        sync: false
+    routing:
+      routes:
+        - type: rewrite
+          source: .*
+          destination: /index.html

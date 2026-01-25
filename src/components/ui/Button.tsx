@@ -14,9 +14,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
         // Variant styles
         const variants = {
-            primary: "bg-eva-dark text-white hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] hover:border-eva-glow border border-transparent shadow-lg",
-            secondary: "bg-white text-eva-dark border border-slate-200 hover:border-eva-glow hover:shadow-md",
-            ghost: "text-eva-dark hover:bg-slate-100/50",
+            primary: "bg-eva-glow text-eva-base hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] hover:bg-white transition-all border border-transparent shadow-lg text-eva-base font-bold",
+            secondary: "bg-eva-panel text-eva-text border border-eva-border hover:border-eva-glow hover:shadow-md",
+            ghost: "text-eva-text hover:bg-white/10",
         };
 
         // Size styles

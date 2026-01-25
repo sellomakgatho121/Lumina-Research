@@ -8,10 +8,12 @@ export default {
     extend: {
       colors: {
         eva: {
-          base: '#FFFFFF', // Ceramic White
-          shade: '#F1F5F9', // Subtle shadow/depth
-          dark: '#1E293B', // Face/Screen Black
-          glow: '#38BDF8', // Eye Blue / Energy
+          base: '#020617', // Deep Dark Blue-Black (Slate 950)
+          panel: '#0F172A', // Slate 900
+          border: '#1E293B', // Slate 800
+          text: '#F8FAFC', // Slate 50
+          glow: '#38BDF8', // Sky 400
+          accent: '#818CF8', // Indigo 400
         }
       },
       fontFamily: {

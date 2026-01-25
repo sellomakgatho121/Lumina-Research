@@ -19,6 +19,7 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
   const {
     query, setQuery,
     mode, setMode,
+    selectedProvider, setSelectedProvider,
     loading,
     result,
     deepResult,
@@ -73,6 +74,8 @@ const ResearchAssistant: React.FC<ResearchAssistantProps> = ({ onThemeChange }) 
             setOptions={setSearchOptions}
             mode={mode}
             setMode={setMode}
+            selectedProvider={selectedProvider}
+            setSelectedProvider={setSelectedProvider}
             onSave={handleSaveSearch}
           />
         </HolographicBorder>
