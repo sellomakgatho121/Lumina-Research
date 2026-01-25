@@ -1,65 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --lumina-bg: #030712;
-    /* Deep Space */
-    --lumina-glass: rgba(255, 255, 255, 0.03);
-    --lumina-glass-hover: rgba(255, 255, 255, 0.08);
-    --lumina-border: rgba(255, 255, 255, 0.08);
-    --lumina-primary: #3b82f6;
-    --lumina-accent: #f43f5e;
-  }
-
   body {
-    @apply bg-[var(--lumina-bg)] text-slate-200 antialiased overflow-x-hidden selection:bg-indigo-500/30 selection:text-white;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  /* Custom Scrollbar - Minimalist */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    @apply bg-eva-base text-eva-dark font-sans antialiased;
+    background-image: radial-gradient(circle at 50% 0%, #F1F5F9 0%, #FFFFFF 100%);
   }
 }
 
-@layer utilities {
+@layer components {
   .glass-panel {
-    @apply bg-[var(--lumina-glass)] backdrop-blur-xl border border-[var(--lumina-border)];
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-lg;
   }
 
-  .glass-button {
-    @apply relative overflow-hidden transition-all duration-300 active:scale-95;
+  .ceramic-panel {
+    @apply bg-white shadow-xl shadow-slate-200/50 rounded-3xl border border-slate-100;
   }
 
   .text-glow {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-
-  .noise-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
   }
 }

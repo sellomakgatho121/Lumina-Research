@@ -132,8 +132,8 @@ const SearchInput: React.FC<SearchInputProps> = ({
                             <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <OptionGroup label="Timeframe">
                                     <div className="flex gap-2">
-                                        <Input placeholder="Start (YYYY)" onChange={(v) => setOptions({ ...options, dateRange: { ...options.dateRange, start: v } })} />
-                                        <Input placeholder="End (YYYY)" onChange={(v) => setOptions({ ...options, dateRange: { ...options.dateRange, end: v } })} />
+                                        <Input placeholder="Start (YYYY)" onChange={(v) => setOptions({ ...options, dateRange: { ...(options.dateRange || {}), start: v } })} />
+                                        <Input placeholder="End (YYYY)" onChange={(v) => setOptions({ ...options, dateRange: { ...(options.dateRange || {}), end: v } })} />
                                     </div>
                                 </OptionGroup>
 
