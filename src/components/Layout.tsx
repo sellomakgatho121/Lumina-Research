@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AppMode } from '../types';
 import clsx from 'clsx';
 import AnimatedBackground from './ui/AnimatedBackground';
+import SettingsModal from './SettingsModal';
+import { useAuth } from '../contexts/AuthContext';
+import { User as UserIcon, Settings } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,8 +16,29 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode }) => {
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-[var(--lumina-bg)] text-slate-200 font-sans selection:bg-blue-500/30">
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Top Right Profile Button */}
+      <div className="fixed top-6 right-6 z-50">
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all group"
+        >
+          {user?.photoURL ? (
+            <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-white/20" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+              <UserIcon size={16} className="text-slate-300" />
+            </div>
+          )}
+          <Settings size={16} className="text-slate-400 group-hover:rotate-45 transition-transform duration-500" />
+        </button>
+      </div>
       {/* Animated Particle Background */}
       <AnimatedBackground />
 

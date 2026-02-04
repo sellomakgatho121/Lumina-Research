@@ -2,19 +2,25 @@ import { GoogleGenAI, Modality, HarmCategory, HarmBlockThreshold } from "@google
 import { ResearchResult, SearchOptions } from "../types";
 import { ILLMProvider } from "./llmProvider";
 
-const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
+const getAI = (apiKey?: string) => new GoogleGenAI({ apiKey: apiKey || import.meta.env.VITE_GEMINI_API_KEY || "" });
 
 export class GeminiService implements ILLMProvider {
+  private apiKey?: string;
+
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey;
+  }
+
   async research(query: string, useMaps: boolean = false, options?: SearchOptions): Promise<ResearchResult> {
-    return searchResearch(query, useMaps, options);
+    return searchResearch(query, useMaps, options, this.apiKey);
   }
 
   async deepThink(query: string): Promise<string> {
-    return deepThinkResearch(query);
+    return deepThinkResearch(query, this.apiKey);
   }
 
   async chat(history: { role: string; parts: { text: string }[] }[], newMessage: string): Promise<string> {
-    return sendChatMessage(history, newMessage);
+    return sendChatMessage(history, newMessage, this.apiKey);
   }
 }
 
@@ -22,9 +28,10 @@ export class GeminiService implements ILLMProvider {
 export const searchResearch = async (
   query: string,
   useMaps: boolean = false,
-  options?: SearchOptions
+  options?: SearchOptions,
+  apiKey?: string
 ): Promise<ResearchResult> => {
-  const ai = getAI();
+  const ai = getAI(apiKey);
   const modelId = 'gemini-2.5-flash';
 
   const tools = useMaps ? [{ googleMaps: {} }] : [{ googleSearch: {} }];
@@ -117,8 +124,8 @@ export const searchResearch = async (
 };
 
 // -- 2. Deep Thinking Research --
-export const deepThinkResearch = async (query: string): Promise<string> => {
-  const ai = getAI();
+export const deepThinkResearch = async (query: string, apiKey?: string): Promise<string> => {
+  const ai = getAI(apiKey);
   const modelId = 'gemini-3-pro-preview';
 
   try {
@@ -137,8 +144,8 @@ export const deepThinkResearch = async (query: string): Promise<string> => {
 };
 
 // -- 3. Fast Response (Lite) --
-export const fastCategorize = async (text: string): Promise<string> => {
-  const ai = getAI();
+export const fastCategorize = async (text: string, apiKey?: string): Promise<string> => {
+  const ai = getAI(apiKey);
   const modelId = 'gemini-2.5-flash-lite-latest'; // Mapping for flash-lite
 
   try {
@@ -155,9 +162,10 @@ export const fastCategorize = async (text: string): Promise<string> => {
 // -- 4. Chat (Pro) --
 export const sendChatMessage = async (
   history: { role: string; parts: { text: string }[] }[],
-  newMessage: string
+  newMessage: string,
+  apiKey?: string
 ) => {
-  const ai = getAI();
+  const ai = getAI(apiKey);
   const modelId = 'gemini-3-pro-preview';
 
   try {
@@ -182,9 +190,10 @@ export const analyzeMedia = async (
   prompt: string,
   base64Data: string,
   mimeType: string,
-  isVideo: boolean = false
+  isVideo: boolean = false,
+  apiKey?: string
 ): Promise<string> => {
-  const ai = getAI();
+  const ai = getAI(apiKey);
   // Prompt requirement: "use model gemini-3-pro-preview" for video and images
   const modelId = 'gemini-3-pro-preview';
 
@@ -206,8 +215,8 @@ export const analyzeMedia = async (
 };
 
 // -- 6. Audio Transcription --
-export const transcribeAudio = async (base64Audio: string): Promise<string> => {
-  const ai = getAI();
+export const transcribeAudio = async (base64Audio: string, apiKey?: string): Promise<string> => {
+  const ai = getAI(apiKey);
   const modelId = 'gemini-2.5-flash'; // Prompt requirement
 
   try {
@@ -228,8 +237,8 @@ export const transcribeAudio = async (base64Audio: string): Promise<string> => {
 };
 
 // -- 7. TTS --
-export const generateSpeech = async (text: string): Promise<ArrayBuffer | null> => {
-  const ai = getAI();
+export const generateSpeech = async (text: string, apiKey?: string): Promise<ArrayBuffer | null> => {
+  const ai = getAI(apiKey);
   const modelId = 'gemini-2.5-flash-preview-tts';
 
   try {

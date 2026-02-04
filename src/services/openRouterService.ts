@@ -5,8 +5,8 @@ export class OpenRouterService implements ILLMProvider {
     private apiKey: string;
     private baseUrl = "https://openrouter.ai/api/v1/chat/completions";
 
-    constructor() {
-        this.apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || "";
+    constructor(apiKey?: string) {
+        this.apiKey = apiKey || import.meta.env.VITE_OPENROUTER_API_KEY || "";
     }
 
     async research(query: string, _useMaps?: boolean, _options?: SearchOptions): Promise<ResearchResult> {

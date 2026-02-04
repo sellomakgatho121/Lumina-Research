@@ -2,8 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { ResearchResult, SearchOptions, SavedSearch, LLMProvider } from '../types';
 import { generateSpeech, transcribeAudio } from '../services/geminiService';
 import { getProvider } from '../services/providerFactory';
+import { useAuth } from '../contexts/AuthContext';
 
 export const useResearch = (onThemeChange?: (color: string) => void) => {
+    const { getApiKey } = useAuth();
     const [query, setQuery] = useState('');
     const [mode, setMode] = useState<'standard' | 'maps' | 'deep'>('standard');
     const [selectedProvider, setSelectedProvider] = useState<LLMProvider>(LLMProvider.GEMINI);
@@ -64,7 +66,8 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
         setDeepResult(null);
 
         try {
-            const provider = getProvider(selectedProvider);
+            const apiKey = getApiKey(selectedProvider);
+            const provider = getProvider(selectedProvider, apiKey);
             if (mode === 'deep') {
                 const text = await provider.deepThink(query);
                 setDeepResult(text);
@@ -94,7 +97,8 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
 
         setIsPlaying(true);
         try {
-            const audioBuffer = await generateSpeech(text.slice(0, 500));
+            const apiKey = getApiKey(LLMProvider.GEMINI); // TTS always uses Gemini
+            const audioBuffer = await generateSpeech(text.slice(0, 500), apiKey);
             if (audioBuffer) {
                 if (!audioContextRef.current) {
                     audioContextRef.current = new AudioContext();
@@ -151,7 +155,8 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
                     reader.onloadend = async () => {
                         const base64 = (reader.result as string).split(',')[1];
                         try {
-                            const text = await transcribeAudio(base64);
+                            const apiKey = getApiKey(LLMProvider.GEMINI); // STT always uses Gemini
+                            const text = await transcribeAudio(base64, apiKey);
                             setQuery(prev => prev + ' ' + text);
                         } catch (e) {
                             console.error("Transcription failed", e);

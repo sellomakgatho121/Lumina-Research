@@ -5,8 +5,8 @@ export class GroqService implements ILLMProvider {
     private apiKey: string;
     private baseUrl = "https://api.groq.com/openai/v1/chat/completions";
 
-    constructor() {
-        this.apiKey = import.meta.env.VITE_GROQ_API_KEY || "";
+    constructor(apiKey?: string) {
+        this.apiKey = apiKey || import.meta.env.VITE_GROQ_API_KEY || "";
     }
 
     async research(query: string, _useMaps?: boolean, _options?: SearchOptions): Promise<ResearchResult> {

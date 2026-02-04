@@ -5,8 +5,8 @@ export class DeepSeekService implements ILLMProvider {
     private apiKey: string;
     private baseUrl = "https://api.deepseek.com/chat/completions";
 
-    constructor() {
-        this.apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || "";
+    constructor(apiKey?: string) {
+        this.apiKey = apiKey || import.meta.env.VITE_DEEPSEEK_API_KEY || "";
     }
 
     async research(query: string, _useMaps?: boolean, _options?: SearchOptions): Promise<ResearchResult> {
