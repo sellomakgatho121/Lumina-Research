@@ -3,7 +3,7 @@ services:
     name: lumina-research
     runtime: static
     buildCommand: npm run build
-    publishDir: dist
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_GEMINI_API_KEY
         sync: false
