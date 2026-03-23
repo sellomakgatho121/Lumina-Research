@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthCallback from './components/AuthCallback';
 import LandingPage from './components/landing/LandingPage';
 import AppShell from './components/AppShell';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -22,7 +23,11 @@ root.render(
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/app/*" element={<AppShell />} />
+            <Route path="/app/*" element={
+              <ProtectedRoute>
+                <AppShell />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

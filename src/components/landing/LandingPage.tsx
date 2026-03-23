@@ -3,9 +3,25 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Microscope, Sparkles, Shield, Cpu, Zap } from 'lucide-react';
 import Hero3D from './Hero3D';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { user, signInWithGoogle } = useAuth();
+    
+    const handleStart = async () => {
+        if (user) {
+            navigate('/app');
+        } else {
+            try {
+                await signInWithGoogle();
+                navigate('/app');
+            } catch (error) {
+                console.error("Authentication failed:", error);
+            }
+        }
+    };
+
     const { scrollYProgress } = useScroll();
     
     const yHero = useTransform(scrollYProgress, [0, 0.5], [0, -200]);
@@ -67,7 +83,7 @@ const LandingPage = () => {
                         className="flex flex-col sm:flex-row gap-4 justify-center"
                     >
                         <button 
-                            onClick={() => navigate('/app')}
+                            onClick={handleStart}
                             className="group px-10 py-5 rounded-2xl bg-white text-slate-950 font-bold text-lg hover:bg-blue-50 transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)] flex items-center gap-3 active:scale-95"
                         >
                             Start Researching
@@ -136,7 +152,7 @@ const LandingPage = () => {
                             Join thousands of researchers pushing the boundaries of what's possible with AI. Lumina is open and ready.
                         </p>
                         <button 
-                            onClick={() => navigate('/app')}
+                            onClick={handleStart}
                             className="px-12 py-6 rounded-3xl bg-blue-600 text-white font-black text-xl hover:bg-blue-500 transition-all shadow-[0_0_60px_rgba(37,99,235,0.3)] active:scale-95"
                         >
                             Enter the Nexus

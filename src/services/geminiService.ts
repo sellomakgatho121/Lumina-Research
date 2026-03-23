@@ -2,7 +2,13 @@ import { GoogleGenAI, Modality, HarmCategory, HarmBlockThreshold } from "@google
 import { ResearchResult, SearchOptions } from "../types";
 import { ILLMProvider } from "./llmProvider";
 
-const getAI = (apiKey?: string) => new GoogleGenAI({ apiKey: apiKey || import.meta.env.VITE_GEMINI_API_KEY || "" });
+const getAI = (apiKey?: string) => {
+  const key = apiKey || import.meta.env.VITE_GEMINI_API_KEY;
+  if (!key) {
+    throw new Error("Missing Gemini API Key. Please provide one in the application settings or environment variables.");
+  }
+  return new GoogleGenAI({ apiKey: key });
+};
 
 // -- Retry Utility --
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {

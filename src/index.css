@@ -24,6 +24,13 @@
       url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
   }
 
+  /* Global Accessibility Focus States */
+  *:focus-visible {
+    outline: 2px solid var(--eva-glow);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
   /* Custom Scrollbar for 2026 aesthetic */
   ::-webkit-scrollbar {
     width: 6px;
