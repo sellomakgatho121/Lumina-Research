@@ -1,51 +1,51 @@
-import { collection, doc, setDoc, deleteDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
-import { db } from "../lib/firebase";
 import { SavedSearch } from "../types";
 
+const getStorageKey = (userId: string) => `lumina_searches_${userId}`;
+
 export const syncSearchesToFirestore = async (userId: string, searches: SavedSearch[]) => {
-    try {
-        // Sync the latest searches batch (limit what to write to save quota if needed, 
-        // but for simplicity we write the ones being saved)
-        // Since useResearch handles the state Array, we can provide a method to save individual searches.
-        // It's better to provide a saveSearchToDb instead of bulk sync every time.
-    } catch (e) {
-        console.error("Firestore Bulk Sync Error:", e);
-    }
+    // Left empty to maintain signature compatibility
 };
 
 export const saveSearchToDb = async (userId: string, search: SavedSearch) => {
     try {
-        const searchRef = doc(db, "users", userId, "searches", search.id);
-        await setDoc(searchRef, search);
+        const key = getStorageKey(userId);
+        const existingRaw = localStorage.getItem(key);
+        const existing: SavedSearch[] = existingRaw ? JSON.parse(existingRaw) : [];
+        
+        // Remove if exists, then prepend
+        const filtered = existing.filter(s => s.id !== search.id);
+        const updated = [search, ...filtered];
+        
+        localStorage.setItem(key, JSON.stringify(updated.slice(0, 50))); // Keep last 50
     } catch (error) {
-        console.error("Error saving search to Firestore:", error);
+        console.error("Error saving search to local storage:", error);
     }
 }
 
 export const loadSearchesFromDb = async (userId: string): Promise<SavedSearch[]> => {
     try {
-        const searchesRef = collection(db, "users", userId, "searches");
-        // Get the latest 50 searches
-        const q = query(searchesRef, orderBy("timestamp", "desc"), limit(50));
-        const snapshot = await getDocs(q);
-        
-        const searches: SavedSearch[] = [];
-        snapshot.forEach((doc) => {
-            searches.push(doc.data() as SavedSearch);
-        });
-        
-        return searches;
+        const key = getStorageKey(userId);
+        const existingRaw = localStorage.getItem(key);
+        if (existingRaw) {
+            return JSON.parse(existingRaw) as SavedSearch[];
+        }
+        return [];
     } catch (error) {
-        console.error("Error fetching searches from Firestore:", error);
+        console.error("Error loading searches from local storage:", error);
         return [];
     }
 }
 
 export const deleteSearchFromDb = async (userId: string, searchId: string) => {
     try {
-        const searchRef = doc(db, "users", userId, "searches", searchId);
-        await deleteDoc(searchRef);
+        const key = getStorageKey(userId);
+        const existingRaw = localStorage.getItem(key);
+        if (existingRaw) {
+            const existing: SavedSearch[] = JSON.parse(existingRaw);
+            const filtered = existing.filter(s => s.id !== searchId);
+            localStorage.setItem(key, JSON.stringify(filtered));
+        }
     } catch (error) {
-        console.error("Error deleting search from Firestore:", error);
+        console.error("Error deleting search from local storage:", error);
     }
 }

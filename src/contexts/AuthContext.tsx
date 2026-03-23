@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase';
 import { LLMProvider } from '../types';
+
+export interface User {
+    uid: string;
+    displayName: string | null;
+    email: string | null;
+    photoURL: string | null;
+}
 
 interface AuthContextType {
     user: User | null;
@@ -23,71 +28,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        // Safety timeout: if Firebase doesn't respond in 3 seconds, render the app anyway
-        const timeout = setTimeout(() => {
-            setLoading(false);
-        }, 3000);
-
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            clearTimeout(timeout);
-            setUser(currentUser);
-            setLoading(false);
-
-            if (currentUser) {
-                // Load keys for this user
-                const storedKeys = localStorage.getItem(`lumina_keys_${currentUser.uid}`);
-                if (storedKeys) {
-                    setApiKeys(JSON.parse(storedKeys));
-                } else {
-                    setApiKeys({});
-                }
-            } else {
-                setApiKeys({});
-            }
-        });
-        return () => {
-            clearTimeout(timeout);
-            unsubscribe();
-        };
+        // Mock auth persistence
+        const storedUser = localStorage.getItem('lumina_guest_user');
+        if (storedUser) {
+            const guest = JSON.parse(storedUser);
+            setUser(guest);
+            loadKeys(guest.uid);
+        }
+        setLoading(false);
     }, []);
 
+    const loadKeys = (uid: string) => {
+        const storedKeys = localStorage.getItem(`lumina_keys_${uid}`);
+        if (storedKeys) {
+            setApiKeys(JSON.parse(storedKeys));
+        } else {
+            setApiKeys({});
+        }
+    };
 
     const signInWithGoogle = async () => {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        setUser(result.user);
+        // Mock sign-in process
+        const guestUser = {
+            uid: 'guest-' + Math.random().toString(36).substr(2, 9),
+            displayName: 'Guest Researcher',
+            email: 'guest@lumina.ai',
+            photoURL: null
+        };
+        setUser(guestUser);
+        localStorage.setItem('lumina_guest_user', JSON.stringify(guestUser));
+        loadKeys(guestUser.uid);
     };
 
     const logout = async () => {
-        await signOut(auth);
+        setUser(null);
+        setApiKeys({});
+        localStorage.removeItem('lumina_guest_user');
     };
 
     const saveApiKey = (provider: string, key: string) => {
         if (!user) return;
-
-        // Validate provider against enum? Optional but good practice.
-
         const newKeys = { ...apiKeys, [provider]: key };
         setApiKeys(newKeys);
         localStorage.setItem(`lumina_keys_${user.uid}`, JSON.stringify(newKeys));
     };
 
     const getApiKey = (provider: string): string => {
-        // 1. Check User Custom Key
-        if (apiKeys[provider]) {
-            return apiKeys[provider];
-        }
+        if (apiKeys[provider]) return apiKeys[provider];
 
-        // 2. Fallback to System Key (VITE_...)
-        // Mapping provider enum/string to env var
-        // GEMINI -> VITE_GEMINI_API_KEY
         const envKeyMap: Record<string, string> = {
             [LLMProvider.GEMINI]: import.meta.env.VITE_GEMINI_API_KEY,
             [LLMProvider.GROQ]: import.meta.env.VITE_GROQ_API_KEY,
             [LLMProvider.DEEPSEEK]: import.meta.env.VITE_DEEPSEEK_API_KEY,
             [LLMProvider.OPENROUTER]: import.meta.env.VITE_OPENROUTER_API_KEY,
         };
-
         return envKeyMap[provider] || "";
     };
 
