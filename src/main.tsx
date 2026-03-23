@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthCallback from './components/AuthCallback';
+import LandingPage from './components/landing/LandingPage';
+import AppShell from './components/AppShell';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -19,8 +20,10 @@ root.render(
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="*" element={<App />} />
+            <Route path="/app/*" element={<AppShell />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

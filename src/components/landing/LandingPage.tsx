@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Microscope, Sparkles, Shield, Cpu, Zap } from 'lucide-react';
 import Hero3D from './Hero3D';
@@ -21,7 +22,9 @@ const LandingPage = () => {
         <div className="relative w-full overflow-x-hidden pt-20">
             {/* Hero Section */}
             <section className="relative h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
-                <Hero3D />
+                <React.Suspense fallback={<div className="absolute inset-0 bg-slate-950" />}>
+                    <Hero3D />
+                </React.Suspense>
                 
                 <motion.div 
                     style={{ y: yHero, opacity: opacityHero }}

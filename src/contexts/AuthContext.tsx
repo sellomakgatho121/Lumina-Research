@@ -23,7 +23,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
 
     useEffect(() => {
+        // Safety timeout: if Firebase doesn't respond in 3 seconds, render the app anyway
+        const timeout = setTimeout(() => {
+            setLoading(false);
+        }, 3000);
+
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            clearTimeout(timeout);
             setUser(currentUser);
             setLoading(false);
 
@@ -39,8 +45,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setApiKeys({});
             }
         });
-        return unsubscribe;
+        return () => {
+            clearTimeout(timeout);
+            unsubscribe();
+        };
     }, []);
+
 
     const signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
@@ -82,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return (
         <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout, apiKeys, saveApiKey, getApiKey }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
