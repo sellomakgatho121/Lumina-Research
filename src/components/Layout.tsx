@@ -8,6 +8,8 @@ import SettingsModal from './SettingsModal';
 import { useAuth } from '../contexts/AuthContext';
 import { User as UserIcon, Settings } from 'lucide-react';
 
+import { useAI, AIProvider } from '../contexts/AIContext';
+
 interface LayoutProps {
   children: ReactNode;
   currentMode: AppMode;
@@ -15,13 +17,37 @@ interface LayoutProps {
   accentColor: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode }) => {
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+
+const LayoutContent: React.FC<LayoutProps> = ({ children, currentMode }) => {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const { user } = useAuth();
+  const { isThinking } = useAI();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const getActiveMode = () => {
+    if (location.pathname.includes('/app/research')) return AppMode.RESEARCH;
+    if (location.pathname.includes('/app/media')) return AppMode.MEDIA;
+    if (location.pathname.includes('/app/live')) return AppMode.LIVE;
+    return currentMode;
+  };
+
+  const activeMode = getActiveMode();
 
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-[var(--lumina-bg)] text-slate-200 font-sans selection:bg-blue-500/30">
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Top Left Home Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <Link 
+          to="/"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all text-white/60 hover:text-white font-bold"
+        >
+          Lumina
+        </Link>
+      </div>
 
       {/* Top Right Profile Button */}
       <div className="fixed top-6 right-6 z-50">
@@ -36,11 +62,26 @@ const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode }) => {
               <UserIcon size={16} className="text-slate-300" />
             </div>
           )}
-          <Settings size={16} className="text-slate-400 group-hover:rotate-45 transition-transform duration-500" />
+          <Settings size={16} className="text-white group-hover:rotate-45 transition-transform duration-500" />
         </button>
       </div>
+
       {/* Animated Particle Background */}
       <AnimatedBackground />
+
+      {/* AI Breathing Aura (when thinking) */}
+      <AnimatePresence>
+        {isThinking && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] rounded-full bg-blue-500/20 ai-thinking-glow" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Global Noise Texture */}
       <div className="noise-bg" />
@@ -53,7 +94,18 @@ const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode }) => {
 
       {/* Main Content - Properly Centered */}
       <main className="relative z-10 w-full min-h-screen flex items-center justify-center p-6 md:p-12">
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, scale: 0.98, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 1.02, y: -10 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full flex justify-center"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Floating Dock Navigation - Simplified for Mobile */}
@@ -65,20 +117,20 @@ const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode }) => {
           className="flex items-center gap-1 md:gap-2 p-2 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50"
         >
           <NavButton
-            active={currentMode === AppMode.RESEARCH}
-            onClick={() => setMode(AppMode.RESEARCH)}
+            active={activeMode === AppMode.RESEARCH}
+            onClick={() => navigate('/app/research')}
             icon={<Microscope size={20} />}
             label="Research"
           />
           <NavButton
-            active={currentMode === AppMode.MEDIA}
-            onClick={() => setMode(AppMode.MEDIA)}
+            active={activeMode === AppMode.MEDIA}
+            onClick={() => navigate('/app/media')}
             icon={<Layers size={20} />}
             label="Media"
           />
           <NavButton
-            active={currentMode === AppMode.LIVE}
-            onClick={() => setMode(AppMode.LIVE)}
+            active={activeMode === AppMode.LIVE}
+            onClick={() => navigate('/app/live')}
             icon={<Radio size={20} />}
             label="Live"
           />
@@ -93,6 +145,14 @@ const Layout: React.FC<LayoutProps> = ({ children, currentMode, setMode }) => {
     </div>
   );
 };
+
+
+const Layout: React.FC<LayoutProps> = (props) => (
+  <AIProvider>
+    <LayoutContent {...props} />
+  </AIProvider>
+);
+
 
 interface NavButtonProps {
   active: boolean;

@@ -4,6 +4,19 @@ import { ILLMProvider } from "./llmProvider";
 
 const getAI = (apiKey?: string) => new GoogleGenAI({ apiKey: apiKey || import.meta.env.VITE_GEMINI_API_KEY || "" });
 
+// -- Retry Utility --
+async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
+  try {
+    return await fn();
+  } catch (error: any) {
+    if (retries > 0 && (error.status === 429 || error.status >= 500)) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return withRetry(fn, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
+
 export class GeminiService implements ILLMProvider {
   private apiKey?: string;
 
@@ -12,12 +25,13 @@ export class GeminiService implements ILLMProvider {
   }
 
   async research(query: string, useMaps: boolean = false, options?: SearchOptions): Promise<ResearchResult> {
-    return searchResearch(query, useMaps, options, this.apiKey);
+    return withRetry(() => searchResearch(query, useMaps, options, this.apiKey));
   }
 
   async deepThink(query: string): Promise<string> {
-    return deepThinkResearch(query, this.apiKey);
+    return withRetry(() => deepThinkResearch(query, this.apiKey));
   }
+
 
   async chat(history: { role: string; parts: { text: string }[] }[], newMessage: string): Promise<string> {
     return sendChatMessage(history, newMessage, this.apiKey);
@@ -126,7 +140,7 @@ export const searchResearch = async (
 // -- 2. Deep Thinking Research --
 export const deepThinkResearch = async (query: string, apiKey?: string): Promise<string> => {
   const ai = getAI(apiKey);
-  const modelId = 'gemini-3-pro-preview';
+  const modelId = 'gemini-2.5-pro'; // Changed from non-existent/paid gemini-3 to 2.5 pro
 
   try {
     const response = await ai.models.generateContent({
@@ -166,7 +180,7 @@ export const sendChatMessage = async (
   apiKey?: string
 ) => {
   const ai = getAI(apiKey);
-  const modelId = 'gemini-3-pro-preview';
+  const modelId = 'gemini-2.5-pro';
 
   try {
     const chat = ai.chats.create({
@@ -194,8 +208,8 @@ export const analyzeMedia = async (
   apiKey?: string
 ): Promise<string> => {
   const ai = getAI(apiKey);
-  // Prompt requirement: "use model gemini-3-pro-preview" for video and images
-  const modelId = 'gemini-3-pro-preview';
+  // Prompt requirement: "use model gemini-2.5-pro" for video and images
+  const modelId = 'gemini-2.5-pro';
 
   try {
     const response = await ai.models.generateContent({

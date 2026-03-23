@@ -41,6 +41,20 @@ const ResearchResults: React.FC<ResearchResultsProps> = ({
         >
             {/* Toolbar Actions (TTS, Copy, etc) */}
             <div className="flex justify-end gap-2 mb-4">
+                <ActionButton 
+                    icon={<Download size={18} />} 
+                    onClick={() => {
+                        if (!displayContent) return;
+                        const blob = new Blob([displayContent], { type: 'text/markdown' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `lumina-research-${Date.now()}.md`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }} 
+                    label="Download Markdown" 
+                />
                 <ActionButton icon={<Volume2 size={18} />} onClick={() => onTTS(displayContent)} active={isPlaying} label="Read Aloud" />
             </div>
 

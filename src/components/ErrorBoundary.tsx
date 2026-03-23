@@ -31,9 +31,12 @@ class ErrorBoundary extends Component<Props, State> {
             errorInfo
         });
 
-        // TODO: Send to error tracking service (Sentry, LogRocket)
+        // Error tracking service integration point (e.g., Sentry, LogRocket)
+        // Set up your provider and uncomment the below when ready:
         // if (window.Sentry) {
         //   window.Sentry.captureException(error, { contexts: { react: { componentStack: errorInfo.componentStack } } });
+        // } else {
+        //   console.error("[Fallback Error Tracking]:", error, errorInfo?.componentStack);
         // }
     }
 
@@ -48,49 +51,53 @@ class ErrorBoundary extends Component<Props, State> {
             }
 
             return (
-                <div className="min-h-screen bg-[var(--lumina-bg)] flex items-center justify-center p-6">
-                    <div className="glass-panel max-w-2xl w-full p-8 rounded-3xl text-center">
-                        <div className="flex justify-center mb-6">
-                            <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                                <AlertTriangle className="text-red-400" size={32} />
+                <div className="min-h-screen bg-[var(--lumina-bg)] flex items-center justify-center p-6 relative overflow-hidden">
+                    {/* Background Aura for Error */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] rounded-full bg-red-500/10 blur-[120px] animate-pulse" />
+
+                    <div className="glass-panel max-w-2xl w-full p-10 rounded-[2.5rem] text-center relative z-10 border-red-500/20">
+                        <div className="flex justify-center mb-8">
+                            <div className="w-20 h-20 rounded-3xl bg-red-500/10 flex items-center justify-center border border-red-500/20 rotate-12 hover:rotate-0 transition-transform duration-500">
+                                <AlertTriangle className="text-red-400" size={40} />
                             </div>
                         </div>
 
-                        <h1 className="text-3xl font-serif text-white mb-4">Something went wrong</h1>
-                        <p className="text-slate-400 mb-6">
-                            We encountered an unexpected error. Don't worry, your data is safe.
+                        <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">System Disruption</h1>
+                        <p className="text-slate-400 mb-8 text-lg">
+                            Lumina encountered an unexpected anomaly. We've preserved your session data.
                         </p>
 
                         {process.env.NODE_ENV === 'development' && this.state.error && (
-                            <details className="text-left mb-6 bg-black/20 rounded-xl p-4 border border-white/10">
-                                <summary className="text-sm text-white/60 cursor-pointer mb-2 font-mono">
-                                    Error Details (Dev Mode)
+                            <details className="text-left mb-8 bg-black/40 backdrop-blur-md rounded-2xl p-5 border border-white/5 group">
+                                <summary className="text-sm text-white/40 cursor-pointer mb-3 font-mono hover:text-white transition-colors">
+                                    Technical Diagnostics
                                 </summary>
-                                <pre className="text-xs text-red-400 overflow-auto">
+                                <pre className="text-xs text-red-300/80 overflow-auto max-h-40 custom-scrollbar">
                                     {this.state.error.toString()}
                                     {this.state.errorInfo?.componentStack}
                                 </pre>
                             </details>
                         )}
 
-                        <div className="flex gap-4 justify-center">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
                                 onClick={this.handleReset}
-                                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all border border-white/10"
+                                className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10 font-medium group"
                             >
-                                <RefreshCw size={18} />
-                                Try Again
+                                <RefreshCw size={20} className="group-hover:rotate-180 transition-transform duration-700" />
+                                Re-initialize
                             </button>
                             <button
                                 onClick={() => window.location.href = '/'}
-                                className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-[0_0_30px_rgba(79,70,229,0.4)] transition-all"
+                                className="px-8 py-4 rounded-2xl bg-white text-slate-950 font-bold hover:bg-blue-50 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-95"
                             >
-                                Go Home
+                                Restore System
                             </button>
                         </div>
                     </div>
                 </div>
             );
+
         }
 
         return this.props.children;

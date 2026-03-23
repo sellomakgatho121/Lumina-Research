@@ -9,10 +9,13 @@ interface Particle {
     alpha: number;
 }
 
+import { useAI } from '../../contexts/AIContext';
+
 const AnimatedBackground: React.FC = () => {
+    const { isThinking } = useAI();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const particlesRef = useRef<Particle[]>([]);
-    const animationFrameRef = useRef<number>();
+    const animationFrameRef = useRef<number>(undefined);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -45,7 +48,7 @@ const AnimatedBackground: React.FC = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw grid lines (subtle)
-            ctx.strokeStyle = 'rgba(59, 130, 246, 0.05)';
+            ctx.strokeStyle = isThinking ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)';
             ctx.lineWidth = 1;
             const gridSize = 50;
 
@@ -65,18 +68,20 @@ const AnimatedBackground: React.FC = () => {
 
             // Update and draw particles
             particlesRef.current.forEach((particle, i) => {
-                // Update position
-                particle.x += particle.vx;
-                particle.y += particle.vy;
+                // Update position (faster when thinking)
+                const speedMult = isThinking ? 4 : 1;
+                particle.x += particle.vx * speedMult;
+                particle.y += particle.vy * speedMult;
 
                 // Bounce off edges
                 if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
                 if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
                 // Draw particle
+                const alphaMult = isThinking ? 1.5 : 1;
                 ctx.beginPath();
                 ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(147, 197, 253, ${particle.alpha})`;
+                ctx.fillStyle = `rgba(147, 197, 253, ${Math.min(1, particle.alpha * alphaMult)})`;
                 ctx.fill();
 
                 // Draw connections
@@ -89,7 +94,7 @@ const AnimatedBackground: React.FC = () => {
                         ctx.beginPath();
                         ctx.moveTo(particle.x, particle.y);
                         ctx.lineTo(otherParticle.x, otherParticle.y);
-                        const alpha = (1 - distance / 150) * 0.15;
+                        const alpha = (1 - distance / 150) * (isThinking ? 0.3 : 0.15);
                         ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
                         ctx.lineWidth = 1;
                         ctx.stroke();
@@ -109,13 +114,13 @@ const AnimatedBackground: React.FC = () => {
                 cancelAnimationFrame(animationFrameRef.current);
             }
         };
-    }, []);
+    }, [isThinking]);
 
     return (
         <canvas
             ref={canvasRef}
-            className="fixed inset-0 pointer-events-none z-0"
-            style={{ opacity: 0.4 }}
+            className="fixed inset-0 pointer-events-none z-0 transition-opacity duration-1000"
+            style={{ opacity: isThinking ? 0.8 : 0.4 }}
         />
     );
 };

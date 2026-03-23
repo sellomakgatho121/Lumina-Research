@@ -3,9 +3,13 @@ import { ResearchResult, SearchOptions, SavedSearch, LLMProvider } from '../type
 import { generateSpeech, transcribeAudio } from '../services/geminiService';
 import { getProvider } from '../services/providerFactory';
 import { useAuth } from '../contexts/AuthContext';
+import { saveSearchToDb, loadSearchesFromDb, deleteSearchFromDb } from '../services/dbService';
+
+import { useAI } from '../contexts/AIContext';
 
 export const useResearch = (onThemeChange?: (color: string) => void) => {
-    const { getApiKey } = useAuth();
+    const { getApiKey, user } = useAuth();
+    const { setIsThinking, setStatusMessage } = useAI();
     const [query, setQuery] = useState('');
     const [mode, setMode] = useState<'standard' | 'maps' | 'deep'>('standard');
     const [selectedProvider, setSelectedProvider] = useState<LLMProvider>(LLMProvider.GEMINI);
@@ -34,7 +38,29 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
         return saved ? JSON.parse(saved) : [];
     });
 
-    const handleSaveSearch = () => {
+    // Cloud Sync Effect
+    useEffect(() => {
+        const fetchCloudSearches = async () => {
+            if (user) {
+                const cloudSearches = await loadSearchesFromDb(user.uid);
+                if (cloudSearches.length > 0) {
+                    setSavedSearches(prev => {
+                        // Merge local and cloud, cloud takes precedence for same IDs
+                        const combined = [...cloudSearches];
+                        prev.forEach(p => {
+                            if (!combined.find(c => c.id === p.id)) {
+                                combined.push(p);
+                            }
+                        });
+                        return combined.sort((a, b) => b.timestamp - a.timestamp);
+                    });
+                }
+            }
+        };
+        fetchCloudSearches();
+    }, [user]);
+
+    const handleSaveSearch = async () => {
         if (!query.trim()) return;
         const newSearch: SavedSearch = {
             id: Date.now().toString(),
@@ -45,6 +71,10 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
         const updated = [newSearch, ...savedSearches];
         setSavedSearches(updated);
         localStorage.setItem('lumina_saved_searches', JSON.stringify(updated));
+
+        if (user) {
+            await saveSearchToDb(user.uid, newSearch);
+        }
     };
 
     const handleLoadSearch = (search: SavedSearch) => {
@@ -53,15 +83,21 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
         setIsHistoryOpen(false);
     };
 
-    const handleDeleteSearch = (id: string) => {
+    const handleDeleteSearch = async (id: string) => {
         const updated = savedSearches.filter(s => s.id !== id);
         setSavedSearches(updated);
         localStorage.setItem('lumina_saved_searches', JSON.stringify(updated));
+
+        if (user) {
+            await deleteSearchFromDb(user.uid, id);
+        }
     };
 
     const handleSearch = async () => {
         if (!query.trim()) return;
         setLoading(true);
+        setIsThinking(true);
+        setStatusMessage(mode === 'deep' ? 'Thinking deeply...' : 'Searching the web...');
         setResult(null);
         setDeepResult(null);
 
@@ -82,8 +118,11 @@ export const useResearch = (onThemeChange?: (color: string) => void) => {
             setDeepResult("An error occurred. Please check your connection or API key.");
         } finally {
             setLoading(false);
+            setIsThinking(false);
+            setStatusMessage('');
         }
     };
+
 
     const handleTTS = async (text: string) => {
         if (isPlaying) {
